@@ -6,58 +6,32 @@ const PORT = process.env.PORT || 10000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-// Opslag in het geheugen voor Workspaces en Sessies
-let workspaces = [
-  { id: 'default', name: 'Mijn Roblox Workspace', code: '1234' }
-];
-
 let sessions = [];
 
-// Get alle workspaces
-app.get('/api/workspaces', (req, res) => {
-  res.json(workspaces);
+// API route om alle sessies op te halen (voor Roblox en Website)
+app.get('/api/sessions', (req, res) => {
+  res.json(sessions);
 });
 
-// Maak een nieuwe workspace aan
-app.post('/api/workspaces', (req, res) => {
-  const { name, code } = req.body;
-  const newWorkspace = {
-    id: name.toLowerCase().replace(/\s+/g, '-'),
-    name,
-    code: code || '1234'
-  };
-  workspaces.push(newWorkspace);
-  res.status(201).json({ success: true, workspace: newWorkspace });
-});
-
-// Get sessies per workspace
-app.get('/api/sessions/:workspaceId', (req, res) => {
-  const { workspaceId } = req.params;
-  const filteredSessions = sessions.filter(s => s.workspaceId === workspaceId);
-  res.json(filteredSessions);
-});
-
-// Voeg sessie toe aan specifieke workspace
+// API route om een nieuwe sessie toe te voegen
 app.post('/api/sessions', (req, res) => {
-  const { workspaceId, host, type, time, date } = req.body;
-  const newSession = {
-    id: Date.now(),
-    workspaceId: workspaceId || 'default',
-    host,
-    type,
-    time,
-    date: date || new Date().toISOString().split('T')[0],
-    status: 'Scheduled'
+  const { host, type, time, status } = req.body;
+  const newSession = { 
+    id: Date.now(), 
+    host, 
+    type, 
+    time, 
+    status: status || 'Scheduled' 
   };
   sessions.push(newSession);
   res.status(201).json({ success: true, session: newSession });
 });
 
-// Stuur altijd index.html door
+// Zorg dat de website (index.html) opent als je naar de link surft
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
-  console.log(`Server draait op poort ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
