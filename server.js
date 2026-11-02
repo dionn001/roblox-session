@@ -1,26 +1,63 @@
 const express = require('express');
-const cors = require('cors');
+const path = require('path');
 const app = express();
+const PORT = process.env.PORT || 10000;
 
 app.use(express.json());
-app.use(cors());
+app.use(express.static(path.join(__dirname)));
 
-// Default session data in English
-let activeSessions = [
-  { id: 1, host: "YourName", type: "Training", time: "20:00 CET", status: "Scheduled" }
+// Opslag in het geheugen voor Workspaces en Sessies
+let workspaces = [
+  { id: 'default', name: 'Mijn Roblox Workspace', code: '1234' }
 ];
 
-// Endpoint for Roblox to fetch sessions
-app.get('/api/sessions', (req, res) => {
-  res.json({ success: true, data: activeSessions });
+let sessions = [];
+
+// Get alle workspaces
+app.get('/api/workspaces', (req, res) => {
+  res.json(workspaces);
 });
 
-// Endpoint for the website to add new sessions
+// Maak een nieuwe workspace aan
+app.post('/api/workspaces', (req, res) => {
+  const { name, code } = req.body;
+  const newWorkspace = {
+    id: name.toLowerCase().replace(/\s+/g, '-'),
+    name,
+    code: code || '1234'
+  };
+  workspaces.push(newWorkspace);
+  res.status(201).json({ success: true, workspace: newWorkspace });
+});
+
+// Get sessies per workspace
+app.get('/api/sessions/:workspaceId', (req, res) => {
+  const { workspaceId } = req.params;
+  const filteredSessions = sessions.filter(s => s.workspaceId === workspaceId);
+  res.json(filteredSessions);
+});
+
+// Voeg sessie toe aan specifieke workspace
 app.post('/api/sessions', (req, res) => {
-  const newSession = req.body;
-  activeSessions.push(newSession);
-  res.json({ success: true, message: "Session successfully added!" });
+  const { workspaceId, host, type, time, date } = req.body;
+  const newSession = {
+    id: Date.now(),
+    workspaceId: workspaceId || 'default',
+    host,
+    type,
+    time,
+    date: date || new Date().toISOString().split('T')[0],
+    status: 'Scheduled'
+  };
+  sessions.push(newSession);
+  res.status(201).json({ success: true, session: newSession });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Stuur altijd index.html door
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.listen(PORT, () => {
+  console.log(`Server draait op poort ${PORT}`);
+});
