@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fluxcore Style Session Board</title>
+  <title>Session Management Board</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #0d0e12; color: #ffffff; display: flex; height: 100vh; overflow: hidden; }
@@ -59,8 +59,8 @@
       <div class="brand">⚡ SessionBoard</div>
       <ul class="menu">
         <li class="active">Dashboard</li>
-        <li>Workspaces</li>
-        <li>Instellingen</li>
+        <li>Sessions</li>
+        <li>Settings</li>
       </ul>
     </div>
   </div>
@@ -68,7 +68,7 @@
   <!-- Main View -->
   <div class="main-content">
     <div class="topbar">
-      <input type="text" class="search-bar" placeholder="Zoek naar pagina's...">
+      <input type="text" class="search-bar" placeholder="Search pages...">
       <div class="user-profile">Dionn001</div>
     </div>
 
@@ -94,39 +94,37 @@
       <div id="sessionContainer">
         <div class="empty-card">
           <div class="empty-icon">📅</div>
-          <p>Geen sessies gepland voor deze dag.</p>
-          <button class="btn-schedule" onclick="openModal()">+ Plan er een</button>
+          <p>No sessions scheduled for this day.</p>
+          <button class="btn-schedule" onclick="openModal()">+ Schedule One</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Modal voor toevoegen van een sessie -->
+  <!-- Modal for adding a session -->
   <div class="modal" id="scheduleModal">
     <div class="modal-content">
-      <h3>Plan een nieuwe sessie</h3>
-      <input type="text" id="hostInput" placeholder="Host Username (bijv. Dionn001)">
+      <h3>Schedule a Session</h3>
+      <input type="text" id="hostInput" placeholder="Host Username (e.g. Dionn001)">
       <select id="typeInput">
         <option value="Training">Training</option>
         <option value="Tryout">Tryout</option>
         <option value="Shift">Shift</option>
         <option value="Patrol">Patrol</option>
       </select>
-      <input type="text" id="timeInput" placeholder="Tijd (bijv. 20:00 CET)">
-      <button class="btn-schedule" style="width: 100%;" onclick="submitSession()">Opslaan</button>
-      <button onclick="closeModal()" style="width: 100%; background: none; border: none; color: #8a8d9b; margin-top: 10px; cursor: pointer;">Annuleren</button>
+      <input type="text" id="timeInput" placeholder="Time (e.g. 20:00 CET)">
+      <button class="btn-schedule" style="width: 100%;" onclick="submitSession()">Save Session</button>
+      <button onclick="closeModal()" style="width: 100%; background: none; border: none; color: #8a8d9b; margin-top: 10px; cursor: pointer;">Cancel</button>
     </div>
   </div>
 
 <script>
-  let activeWorkspace = 'default';
-
   function openModal() { document.getElementById('scheduleModal').style.display = 'flex'; }
   function closeModal() { document.getElementById('scheduleModal').style.display = 'none'; }
 
   async function loadSessions() {
     try {
-      const res = await fetch(`/api/sessions/${activeWorkspace}`);
+      const res = await fetch('/api/sessions');
       const sessions = await res.json();
       const container = document.getElementById('sessionContainer');
 
@@ -134,8 +132,8 @@
         container.innerHTML = `
           <div class="empty-card">
             <div class="empty-icon">📅</div>
-            <p>Geen sessies gepland voor deze dag.</p>
-            <button class="btn-schedule" onclick="openModal()">+ Plan er een</button>
+            <p>No sessions scheduled for this day.</p>
+            <button class="btn-schedule" onclick="openModal()">+ Schedule One</button>
           </div>
         `;
       } else {
@@ -161,12 +159,12 @@
     const type = document.getElementById('typeInput').value;
     const time = document.getElementById('timeInput').value;
 
-    if (!host || !time) return alert("Vul alle velden in!");
+    if (!host || !time) return alert("Please fill in all fields!");
 
     await fetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ workspaceId: activeWorkspace, host, type, time })
+      body: JSON.stringify({ host, type, time })
     });
 
     closeModal();
