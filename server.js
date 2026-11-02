@@ -8,12 +8,10 @@ app.use(express.static(path.join(__dirname)));
 
 let sessions = [];
 
-// API route om alle sessies op te halen (voor Roblox en Website)
 app.get('/api/sessions', (req, res) => {
   res.json(sessions);
 });
 
-// API route om een nieuwe sessie toe te voegen
 app.post('/api/sessions', (req, res) => {
   const { host, type, time, status } = req.body;
   const newSession = { 
@@ -27,7 +25,6 @@ app.post('/api/sessions', (req, res) => {
   res.status(201).json({ success: true, session: newSession });
 });
 
-// Zorg dat de website (index.html) opent als je naar de link surft
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
